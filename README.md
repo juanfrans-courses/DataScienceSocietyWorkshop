@@ -13,14 +13,14 @@ We will only be using data for weekday trips in one week in October 2015. So the
 import csv
 
 print 'Reading base data...'
-with open('201510-citibike-tripdata.csv', 'rb') as baseData:
+with open('../01_Data/201510-citibike-tripdata.csv', 'rb') as baseData:
     reader = csv.reader(baseData, delimiter=',')
     baseList = list(reader)
 
 print 'There are ' + str(len(baseList)) + ' trips...'
 
 print 'Creating the output file...'
-output = open('201510_05_09_trips.csv', 'wb')
+output = open('../01_Data/201510_05_09_trips.csv', 'wb')
 output.write(','.join(baseList[0]) + '\n')
 selectedTrips = 0
 for trip in baseList[1:]:
@@ -40,7 +40,7 @@ Once we've filtered the data we need to summarize into the right format, showing
 import csv
 
 print 'Reading base data...'
-with open('201510_05_09_trips.csv', 'rb') as baseData:
+with open('../01_Data/201510_05_09_trips.csv', 'rb') as baseData:
     reader = csv.reader(baseData, delimiter=',')
     baseList = list(reader)
 print 'There are ' + str(len(baseList)) + ' trips...'
@@ -57,7 +57,7 @@ for trip in baseList[1:]:
 print 'There are ' + str(len(stationList)) + ' stations...'
 
 print 'Creating the output file...'
-output = open('201510_tripSummary.csv', 'wb')
+output = open('../01_Data/201510_tripSummary.csv', 'wb')
 balanceLabels = []
 totalLabels = []
 for x in range(24):
@@ -92,8 +92,125 @@ for station in stationList:
 output.close()
 ```
 
+### 4. Intro to Processing
+```Processing
+void setup(){
+  size(500,500);
+  background(0);
+}
+
+void draw(){
+  background(0);
+  ellipse(mouseX, mouseY, 20, 20);
+}
+```
+
+### 5. Creating a grid
+```Processing
+int circleWidth = 20;
+int numberOfColumns = 22;
+int numberOfRows = 22;
+int topMargin = 15;
+int rightMargin = 15;
+int circleSpacing = 2;
+float hueColor = 0;
+float saturationColor = 0;
+
+void setup(){
+  size(500,500);
+  background(0);
+  colorMode(HSB, 360, 100, 100);
+  pixelDensity(2);
+  noLoop();
+  noStroke();
+  for (int i=0; i < numberOfRows; i++){
+    for (int j=0; j < numberOfColumns; j++){
+      hueColor = map(i, 0, numberOfRows, 0, 360);
+      saturationColor = map(j, 0, numberOfColumns, 50, 100);
+      fill(hueColor, saturationColor, 100);
+      ellipse(i*(circleWidth+circleSpacing) + rightMargin, j*(circleWidth+circleSpacing) + topMargin, circleWidth, circleWidth);
+    }
+  }
+}
+```
+
+### 6. Loading the data into Processing
+```Processing
+// Global Objects
+Table stationTable;
+
+void setup(){
+  loadData();
+}
+
+void loadData(){
+  stationTable = loadTable("201510_tripSummary.csv", "header");
+  println(stationTable.getRowCount());
+  String stationName;
+  int totalImbalance;
+  for (int i=0; i<stationTable.getRowCount(); i++){
+    totalImbalance = 0;
+    stationName = stationTable.getString(i, "StationName");
+    for (int j=0; j<24; j++){
+      totalImbalance = totalImbalance + stationTable.getInt(i, (1+j));
+    }
+    println(stationName + " - Total Imbalance = " + str(totalImbalance));
+  }
+}
+```
+
 ### 4. Loading the data into Processing
 
 ### 5. Creating a 'Heatmap' of station imbalance
+Final code:
+```processing
+import processing.pdf.*;
+
+Table station_table;
+PFont font;
+
+void setup() {
+  size(670, 1100);
+  noLoop();
+  smooth();
+  create_graph();
+  println("All done!");
+}
+
+void create_graph() {
+  beginRecord(PDF, "Ambalance_Matrix.pdf");
+  colorMode(HSB, 360, 100, 100);
+  font = createFont("NeutraTextLight.otf", 2, true);
+  textFont(font);
+  background(0, 0, 20);
+  station_table = loadTable("Activity_Matrix.csv", "header");
+  println(station_table.getRowCount());
+  for (int i=0; i<station_table.getRowCount (); i++) {
+    String station_name = station_table.getString(i, 0);
+    fill(300);
+    textAlign(RIGHT);
+    text(station_name, 45, 25+i*3);
+    textAlign(CENTER);
+    for (int j=0; j<23; j++) {
+      int hour_value = station_table.getInt(i, j+1);
+      strokeWeight(0.25);
+      strokeCap(SQUARE);
+      stroke(300);
+      line(60+25*j-12, map(hour_value, 0, 3500, 25+i*3-0.5, 25+i*3+5), 60+25*(j+1)-12, map(station_table.getInt(i, j+2), 0, 3500, 25+i*3-0.5, 25+i*3+5));
+      noStroke();
+      int color_value;
+      if (hour_value >= 0) {
+        fill(180, 100, 100, map(hour_value, 0, 200, 5, 100));
+      } else {
+        fill(24, 100, 100, map(hour_value, 0, -200, 5, 100));
+      }
+      //rectMode(CENTER);
+      //rect(60+25*j, 25+i*3-0.5, 24, 2);
+      fill(0);
+    }
+  }
+  endRecord();
+}
+```
 
 ### 6. Creating station 'dials'

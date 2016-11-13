@@ -1,7 +1,7 @@
 import csv
 
 print 'Reading base data...'
-with open('201510_05_09_trips.csv', 'rb') as baseData:
+with open('../01_Data/201510_05_09_trips.csv', 'rb') as baseData:
 	reader = csv.reader(baseData, delimiter=',')
 	baseList = list(reader)
 print 'There are ' + str(len(baseList)) + ' trips...'
@@ -18,7 +18,7 @@ for trip in baseList[1:]:
 print 'There are ' + str(len(stationList)) + ' stations...'
 
 print 'Creating the output file...'
-output = open('201510_tripSummary.csv', 'wb')
+output = open('../01_Data/201510_tripSummary.csv', 'wb')
 balanceLabels = []
 totalLabels = []
 for x in range(24):
