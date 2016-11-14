@@ -6,7 +6,7 @@ Table stationTable;
 PFont font;
 
 void setup(){
-  size(670,1100);
+  size(670,1415);
   noLoop();
   loadData();
   createGraph();
