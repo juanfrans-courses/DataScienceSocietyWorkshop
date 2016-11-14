@@ -66,26 +66,25 @@ for x in range(24):
 output.write('StationName' + ',' + ','.join(balanceLabels) + ',' + ','.join(totalLabels) + '\n')
 stationCount = 0
 for station in stationList:
-    hourlyTrips = []
+    hourlyBalance = []
     totalHourlyTrips = []
     for hour in range(24):
-        trips = 0
+        balance = 0
         totalTrips = 0
         for trip in baseList[1:]:
-            tripHour = int(trip[1].split(' ')[1].split(':')[1])
+            tripHour = int(trip[1].split(' ')[1].split(':')[0])
             if tripHour == hour:
                 if station == trip[4]:
-                    trips -= 1
+                    balance -= 1
                 if station == trip[8]:
-                    trips += 1
+                    balance += 1
                 if station == trip[4] or station == trip[8]:
                     totalTrips += 1
             else:
                 continue
-        hourlyTrips.append(str(trips))
+        hourlyBalance.append(str(balance))
         totalHourlyTrips.append(str(totalTrips))
-        # print station, hour, trips
-    output.write(station + ',' + ','.join(hourlyTrips) + ',' + ','.join(totalHourlyTrips) + '\n')
+    output.write(station + ',' + ','.join(hourlyBalance) + ',' + ','.join(totalHourlyTrips) + '\n')
     stationCount += 1
     print 'Done with station ' + station + ' ' + str(stationCount) + '/' + str(len(stationList))
 
@@ -158,59 +157,57 @@ void loadData(){
   }
 }
 ```
-
-### 4. Loading the data into Processing
-
-### 5. Creating a 'Heatmap' of station imbalance
+### 7. Creating a 'Heatmap' of station imbalance
 Final code:
-```processing
+```Processing
+// Import libraries
 import processing.pdf.*;
 
-Table station_table;
+// Global Objects
+Table stationTable;
 PFont font;
 
-void setup() {
-  size(670, 1100);
+void setup(){
+  size(670,1100);
   noLoop();
-  smooth();
-  create_graph();
-  println("All done!");
+  loadData();
+  createGraph();
 }
 
-void create_graph() {
-  beginRecord(PDF, "Ambalance_Matrix.pdf");
+void createGraph(){
+  beginRecord(PDF, "ImbalanceMatrix.pdf");
   colorMode(HSB, 360, 100, 100);
   font = createFont("NeutraTextLight.otf", 2, true);
   textFont(font);
   background(0, 0, 20);
-  station_table = loadTable("Activity_Matrix.csv", "header");
-  println(station_table.getRowCount());
-  for (int i=0; i<station_table.getRowCount (); i++) {
-    String station_name = station_table.getString(i, 0);
-    fill(300);
-    textAlign(RIGHT);
-    text(station_name, 45, 25+i*3);
-    textAlign(CENTER);
-    for (int j=0; j<23; j++) {
-      int hour_value = station_table.getInt(i, j+1);
-      strokeWeight(0.25);
-      strokeCap(SQUARE);
-      stroke(300);
-      line(60+25*j-12, map(hour_value, 0, 3500, 25+i*3-0.5, 25+i*3+5), 60+25*(j+1)-12, map(station_table.getInt(i, j+2), 0, 3500, 25+i*3-0.5, 25+i*3+5));
-      noStroke();
-      int color_value;
-      if (hour_value >= 0) {
-        fill(180, 100, 100, map(hour_value, 0, 200, 5, 100));
-      } else {
-        fill(24, 100, 100, map(hour_value, 0, -200, 5, 100));
+  String stationName;
+  textAlign(RIGHT);
+  noStroke();
+  for (int i=0; i<stationTable.getRowCount(); i++){
+    stationName = stationTable.getString(i, "StationName");
+    fill(0, 0, 100);
+    text(stationName, 45, 25+i*3);
+    for (int j=0; j<24; j++){
+      float hourValue = stationTable.getInt(i, (j+1));
+      float alphaValue;
+      if (hourValue >= 0){
+        alphaValue = map(hourValue, 0, 50, 5, 100);
+        fill(180, 100, 100, alphaValue);
       }
-      //rectMode(CENTER);
-      //rect(60+25*j, 25+i*3-0.5, 24, 2);
-      fill(0);
+      else{
+        alphaValue = map(hourValue, 0, -50, 5, 100);
+        fill(24, 100, 100, alphaValue);
+      }
+      rect(50 + j*25, 23.5 + i*3, 24.5, 2.5);
     }
   }
   endRecord();
 }
+
+void loadData(){
+  stationTable = loadTable("201510_tripSummary.csv", "header");
+  println("Data loaded... " + str(stationTable.getRowCount()) + " stations read...");
+}
 ```
 
-### 6. Creating station 'dials'
+### 8. Creating station 'dials'

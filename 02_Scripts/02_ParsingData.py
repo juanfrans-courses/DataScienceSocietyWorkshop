@@ -27,26 +27,25 @@ for x in range(24):
 output.write('StationName' + ',' + ','.join(balanceLabels) + ',' + ','.join(totalLabels) + '\n')
 stationCount = 0
 for station in stationList:
-	hourlyTrips = []
+	hourlyBalance = []
 	totalHourlyTrips = []
 	for hour in range(24):
-		trips = 0
+		balance = 0
 		totalTrips = 0
 		for trip in baseList[1:]:
-			tripHour = int(trip[1].split(' ')[1].split(':')[1])
+			tripHour = int(trip[1].split(' ')[1].split(':')[0])
 			if tripHour == hour:
 				if station == trip[4]:
-					trips -= 1
+					balance -= 1
 				if station == trip[8]:
-					trips += 1
+					balance += 1
 				if station == trip[4] or station == trip[8]:
 					totalTrips += 1
 			else:
 				continue
-		hourlyTrips.append(str(trips))
+		hourlyBalance.append(str(balance))
 		totalHourlyTrips.append(str(totalTrips))
-		# print station, hour, trips
-	output.write(station + ',' + ','.join(hourlyTrips) + ',' + ','.join(totalHourlyTrips) + '\n')
+	output.write(station + ',' + ','.join(hourlyBalance) + ',' + ','.join(totalHourlyTrips) + '\n')
 	stationCount += 1
 	print 'Done with station ' + station + ' ' + str(stationCount) + '/' + str(len(stationList))
 
